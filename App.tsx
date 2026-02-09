@@ -51,8 +51,8 @@ const App: React.FC = () => {
         setCurrentIndex(prevIndex => prevIndex === -1 && newQuestions.length > 0 ? 0 : prevIndex);
       }
 
-    } catch (err) {
-      setError("Failed to load questions. The AI service might be busy or unavailable.");
+    } catch (err: any) {
+      setError(err.message || "Failed to load questions. The AI service might be busy or unavailable.");
     } finally {
       setIsLoading(false);
     }
