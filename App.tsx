@@ -6,7 +6,7 @@ import { ProgressDashboard } from './components/ProgressDashboard';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { SessionMilestone } from './components/SessionMilestone';
 import { fetchQuestionBatch } from './services/geminiService';
-import { FlashcardData, UserAnswer, Difficulty } from './types';
+import { FlashcardData, UserAnswer, Difficulty, GeminiModel } from './types';
 import { BookOpen, AlertCircle, RefreshCcw, PieChart, SlidersHorizontal, RotateCcw } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -18,22 +18,23 @@ const App: React.FC = () => {
   const [showStats, setShowStats] = useState<boolean>(false);
   const [showMilestone, setShowMilestone] = useState<boolean>(false);
   const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.Medium);
+  const [model, setModel] = useState<GeminiModel>(GeminiModel.Gemini25FlashLite);
   const [showWelcomeScreen, setShowWelcomeScreen] = useState<boolean>(true);
 
   // Initialize the first batch
   useEffect(() => {
     // Only load questions if the welcome screen is not being shown (i.e., a session has started)
     if (!showWelcomeScreen) {
-      loadQuestionsForDifficulty(difficulty, true);
+      loadQuestionsForDifficulty(difficulty, model, true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showWelcomeScreen]); // Re-run effect when showWelcomeScreen changes
 
-  const loadQuestionsForDifficulty = useCallback(async (diff: Difficulty, isInitial: boolean = false, replace: boolean = false) => {
+  const loadQuestionsForDifficulty = useCallback(async (diff: Difficulty, selectedModel: GeminiModel, isInitial: boolean = false, replace: boolean = false) => {
     setIsLoading(true);
     setError(null);
     try {
-      const newQuestions = await fetchQuestionBatch(10, diff);
+      const newQuestions = await fetchQuestionBatch(10, diff, selectedModel);
       
       setHistory(prev => {
         if (replace) {
@@ -66,11 +67,12 @@ const App: React.FC = () => {
     setCurrentIndex(-1);
     
     // Fetch new batch with replace=true to be safe
-    loadQuestionsForDifficulty(newDifficulty, true, true);
+    loadQuestionsForDifficulty(newDifficulty, model, true, true);
   };
 
-  const handleStartSession = useCallback((selectedDifficulty: Difficulty) => {
+  const handleStartSession = useCallback((selectedDifficulty: Difficulty, selectedModel: GeminiModel) => {
     setDifficulty(selectedDifficulty);
+    setModel(selectedModel);
     setShowWelcomeScreen(false);
     // The useEffect will now handle loading the questions when showWelcomeScreen changes
   }, []);
@@ -98,12 +100,12 @@ const App: React.FC = () => {
       setCurrentIndex(prev => prev + 1);
     } else {
       // Load more with CURRENT difficulty, append mode
-      loadQuestionsForDifficulty(difficulty, false, false).then(() => {
+      loadQuestionsForDifficulty(difficulty, model, false, false).then(() => {
          // The load function handles state update, but we might need to increment index if we were at end
          setCurrentIndex(prev => prev + 1); 
       });
     }
-  }, [currentIndex, history.length, difficulty, loadQuestionsForDifficulty]);
+  }, [currentIndex, history.length, difficulty, model, loadQuestionsForDifficulty]);
 
   const handleContinueSession = (newDifficulty: Difficulty) => {
     setShowMilestone(false);
@@ -113,7 +115,7 @@ const App: React.FC = () => {
       setDifficulty(newDifficulty);
       setHistory(prev => prev.slice(0, currentIndex + 1));
       
-      loadQuestionsForDifficulty(newDifficulty, false, false).then(() => {
+      loadQuestionsForDifficulty(newDifficulty, model, false, false).then(() => {
         setCurrentIndex(prev => prev + 1);
       });
     } else {
@@ -121,7 +123,7 @@ const App: React.FC = () => {
       if (currentIndex < history.length - 1) {
         setCurrentIndex(prev => prev + 1);
       } else {
-        loadQuestionsForDifficulty(newDifficulty, false, false).then(() => {
+        loadQuestionsForDifficulty(newDifficulty, model, false, false).then(() => {
           setCurrentIndex(prev => prev + 1);
         });
       }
@@ -161,7 +163,7 @@ const App: React.FC = () => {
   // Pre-fetch more questions when nearing the end of the list
   useEffect(() => {
     if (history.length > 0 && currentIndex >= history.length - 2 && !isLoading && !error) {
-      fetchQuestionBatch(3, difficulty).then(newQs => {
+      fetchQuestionBatch(3, difficulty, model).then(newQs => {
         setHistory(prev => {
           const existingIds = new Set(prev.map(q => q.id));
           const uniqueNew = newQs.filter(q => !existingIds.has(q.id));
@@ -169,7 +171,7 @@ const App: React.FC = () => {
         });
       }).catch(err => console.warn("Background fetch failed", err));
     }
-  }, [currentIndex, history.length, isLoading, error, difficulty]);
+  }, [currentIndex, history.length, isLoading, error, difficulty, model]);
 
   const currentCard = history[currentIndex];
   const currentSavedAnswer = currentCard ? userAnswers[currentCard.id]?.selectedOptionIndex : null;

@@ -21,9 +21,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       });
     }
 
-    const requestBody = await context.request.json() as { count?: number; difficulty?: Difficulty };
+    const requestBody = await context.request.json() as { count?: number; difficulty?: Difficulty; model?: string };
     const count = Math.min(Math.max(requestBody.count || 10, 1), 20);
     const difficulty = requestBody.difficulty || Difficulty.Medium;
+    const model = requestBody.model || "gemini-2.5-flash-lite";
 
     // Use the @google/genai (V1) SDK style
     const client = new GoogleGenAI({ apiKey });
@@ -34,7 +35,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       Include a detailed explanation for the correct answer.`;
 
     const response = await client.models.generateContent({
-      model: "gemini-2.5-flash-lite",
+      model: model,
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
         systemInstruction: "You are a senior CISSP certification instructor. Create high-quality, scenario-based questions that test application of knowledge, not just rote memorization.",

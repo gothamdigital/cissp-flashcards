@@ -15,6 +15,11 @@ export enum Difficulty {
   Hard = "Hard"
 }
 
+export enum GeminiModel {
+  Gemini3Flash = "gemini-3-flash-preview",
+  Gemini25FlashLite = "gemini-2.5-flash-lite"
+}
+
 export interface FlashcardData {
   id: string;
   domain: string;
