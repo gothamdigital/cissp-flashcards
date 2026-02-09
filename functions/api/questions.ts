@@ -34,7 +34,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       Include a detailed explanation for the correct answer.`;
 
     const response = await client.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.0-flash",
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
         systemInstruction: "You are a senior CISSP certification instructor. Create high-quality, scenario-based questions that test application of knowledge, not just rote memorization.",
