@@ -26,19 +26,42 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     const difficulty = requestBody.difficulty || Difficulty.Medium;
     const model = requestBody.model || "gemini-2.5-flash-lite";
 
+    const domains = [
+      "Security and Risk Management",
+      "Asset Security",
+      "Security Architecture and Engineering",
+      "Communication and Network Security",
+      "Identity and Access Management (IAM)",
+      "Security Assessment and Testing",
+      "Security Operations",
+      "Software Development Security"
+    ];
+
+    const difficultyRubric = {
+      [Difficulty.Easy]: "Focus on fundamental concepts, definitions, and basic security principles. Questions should test 'Knowledge' and 'Comprehension'.",
+      [Difficulty.Medium]: "Focus on the application of security controls. Use scenarios that require 'Application' and 'Analysis'.",
+      [Difficulty.Hard]: "Focus on strategic judgment and complex decision-making. Questions should test 'Evaluation' and 'Synthesis', often requiring the user to choose the 'BEST', 'MOST', or 'FIRST' action among several plausible options."
+    };
+
     // Use the @google/genai (V1) SDK style
     const client = new GoogleGenAI({ apiKey });
     
-    const prompt = `Generate ${count} unique, random CISSP practice exam questions with ${difficulty} difficulty level.
-      Ensure they cover different domains randomly.
-      Provide 4 multiple choice options for each question.
-      Include a detailed explanation for the correct answer.`;
+    const prompt = `Generate ${count} unique, high-quality CISSP practice exam questions.
+      
+      Difficulty Level: ${difficulty} (${difficultyRubric[difficulty]})
+      
+      Requirements:
+      1. Domains: Randomly select from: ${domains.join(", ")}.
+      2. Format: Scenario-based. Each question must provide a realistic professional context.
+      3. Options: Provide 4 plausible multiple-choice options.
+      4. Distractors: Distractors should be technically accurate security concepts but incorrect for the specific scenario or less effective than the correct answer.
+      5. Explanation: Provide a comprehensive explanation that clarifies why the correct answer is superior and briefly explains why other distractors are incorrect or less ideal in this context.`;
 
     const response = await client.models.generateContent({
       model: model,
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
-        systemInstruction: "You are a senior CISSP certification instructor. Create high-quality, scenario-based questions that test application of knowledge, not just rote memorization.",
+        systemInstruction: "You are a world-class CISSP certification instructor and subject matter expert. Your goal is to prepare candidates for the actual (ISC)² exam by focusing on the 'Manager's Perspective'—prioritizing risk management, business continuity, and the protection of organizational assets. Avoid questions that only require rote memorization; instead, focus on the application of the CISSP Common Body of Knowledge (CBK) in real-world environments.",
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
