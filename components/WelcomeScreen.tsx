@@ -10,13 +10,7 @@ interface WelcomeScreenProps {
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStartSession, isLoading }) => {
   return (
-    <div className="flex flex-col items-center justify-center p-8 text-center max-w-2xl mx-auto">
-      <div className="bg-slate-600 p-3 rounded-xl mb-6">
-        <BookOpen className="text-white w-10 h-10" />
-      </div>
-      <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-400 to-emerald-400 bg-clip-text text-transparent mb-4">
-        CISSP<span className="text-slate-200 font-light ml-2">Master</span>
-      </h1>
+    <div className="flex flex-col items-center justify-start p-8 text-center max-w-2xl mx-auto">
       <p className="text-slate-300 text-lg mb-8 leading-relaxed text-justify">
         Sharpen your cybersecurity knowledge with CISSP Master. This platform generates dynamic, scenario-based practice questions across all CISSP domains, powered by cutting-edge AI.
         <br /><br />

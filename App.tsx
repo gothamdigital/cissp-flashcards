@@ -221,7 +221,7 @@ const App: React.FC = () => {
       </nav>
 
       {/* Main Content Area */}
-      <main className="pt-24 pb-32 px-4 flex flex-col items-center justify-center min-h-screen">
+      <main className={`pt-24 pb-32 px-4 flex flex-col items-center min-h-screen ${showWelcomeScreen ? 'justify-start' : 'justify-center'}`}>
         {showWelcomeScreen ? (
           <WelcomeScreen onStartSession={handleStartSession} isLoading={isLoading} />
         ) : (
