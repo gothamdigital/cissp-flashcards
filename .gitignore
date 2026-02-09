@@ -33,7 +33,7 @@ dist-ssr
 # Project specific
 tasks/
 .wrangler/
-preview_out/
-vite_out/
+preview_out
+vite_out
 metadata.json
 GEMINI.md
