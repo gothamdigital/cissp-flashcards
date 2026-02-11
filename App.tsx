@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Flashcard } from './components/Flashcard';
 import { Controls } from './components/Controls';
 import { LoadingSpinner } from './components/LoadingSpinner';
+import { SkeletonCard } from './components/SkeletonCard';
 import { ProgressDashboard } from './components/ProgressDashboard';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { SessionMilestone } from './components/SessionMilestone';
@@ -180,7 +181,7 @@ const App: React.FC = () => {
 
             {/* Initial Loading State */}
             {!error && history.length === 0 && isLoading && (
-              <LoadingSpinner message={`Generating ${difficulty} secure challenges...`} />
+              <SkeletonCard />
             )}
 
             {/* Card Display */}
