@@ -1,7 +1,8 @@
 import { FlashcardData, Difficulty, GeminiModel } from "../types";
+import { CONFIG } from "../config";
 
 export const fetchQuestionBatch = async (
-  count: number = 10, 
+  count: number = CONFIG.BATCH_SIZE,
   difficulty: Difficulty = Difficulty.Medium,
   model: GeminiModel = GeminiModel.Gemini25FlashLite
 ): Promise<FlashcardData[]> => {
@@ -15,11 +16,11 @@ export const fetchQuestionBatch = async (
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+      const errorData = await response.json().catch(() => ({})) as { error?: string };
       throw new Error(errorData.error || `Server error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as { questions?: FlashcardData[] };
     return data.questions || [];
 
   } catch (error) {

@@ -1,4 +1,12 @@
-import { GoogleGenAI, Type } from "@google/genai";
+/// <reference types="@cloudflare/workers-types" />
+import { GoogleGenAI, HarmCategory, HarmBlockThreshold, Type } from "@google/genai";
+
+// Configuration constants
+const CONFIG = {
+  BATCH_SIZE: 10,
+  MAX_QUESTIONS_PER_REQUEST: 20,
+  MIN_QUESTIONS_PER_REQUEST: 1
+} as const;
 
 interface Env {
   GEMINI_API_KEY: string;
@@ -22,7 +30,10 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     }
 
     const requestBody = await context.request.json() as { count?: number; difficulty?: Difficulty; model?: string };
-    const count = Math.min(Math.max(requestBody.count || 10, 1), 20);
+    const count = Math.min(
+      Math.max(requestBody.count || CONFIG.BATCH_SIZE, CONFIG.MIN_QUESTIONS_PER_REQUEST),
+      CONFIG.MAX_QUESTIONS_PER_REQUEST
+    );
     const difficulty = requestBody.difficulty || Difficulty.Medium;
     const model = requestBody.model || "gemini-2.5-flash-lite";
 
@@ -88,11 +99,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         // CISSP content often triggers safety filters (mentions of attacks/exploits).
         // Setting to BLOCK_NONE to ensure questions are generated.
         safetySettings: [
-          { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-          { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-          { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-          { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
-          { category: "HARM_CATEGORY_CIVIC_INTEGRITY", threshold: "BLOCK_NONE" }
+          { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+          { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+          { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+          { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+          { category: HarmCategory.HARM_CATEGORY_CIVIC_INTEGRITY, threshold: HarmBlockThreshold.BLOCK_NONE }
         ]
       }
     });
@@ -103,7 +114,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       throw new Error("The AI service declined to generate questions. This usually happens due to safety filters.");
     }
 
-    const text = response.candidates[0].content?.parts?.[0]?.text;
+    const text = response.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) {
       throw new Error("The AI returned an empty response.");
     }

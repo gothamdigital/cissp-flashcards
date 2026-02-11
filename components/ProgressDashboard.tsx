@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { X, PieChart, CheckCircle, AlertCircle, TrendingUp } from 'lucide-react';
 import { UserAnswer } from '../types';
+import { CONFIG } from '../config';
 
 interface ProgressDashboardProps {
   isOpen: boolean;
@@ -22,9 +23,12 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ isOpen, on
       if (!byDomain[a.domain]) {
         byDomain[a.domain] = { total: 0, correct: 0 };
       }
-      byDomain[a.domain].total += 1;
-      if (a.isCorrect) {
-        byDomain[a.domain].correct += 1;
+      const domainStats = byDomain[a.domain];
+      if (domainStats) {
+        domainStats.total += 1;
+        if (a.isCorrect) {
+          domainStats.correct += 1;
+        }
       }
     });
 
@@ -66,7 +70,11 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ isOpen, on
             <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-700/50 flex flex-col items-center justify-center text-center">
               <span className="text-slate-400 text-sm font-medium uppercase tracking-wider mb-1">Accuracy</span>
               <div className="flex items-center gap-2">
-                 <span className={`text-4xl font-bold ${stats.accuracy >= 70 ? 'text-emerald-400' : stats.accuracy >= 50 ? 'text-yellow-400' : 'text-rose-400'}`}>
+                 <span className={`text-4xl font-bold ${
+                   stats.accuracy >= CONFIG.ACCURACY_THRESHOLDS.HIGH ? 'text-emerald-400' :
+                   stats.accuracy >= CONFIG.ACCURACY_THRESHOLDS.MEDIUM ? 'text-yellow-400' :
+                   'text-rose-400'
+                 }`}>
                   {stats.accuracy}%
                 </span>
                 <TrendingUp size={20} className="text-slate-500" />
