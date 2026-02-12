@@ -23,6 +23,7 @@ export enum GeminiModel {
 export interface FlashcardData {
   id: string;
   domain: string;
+  subTopic?: string;
   question: string;
   options: string[];
   correctAnswerIndex: number; // 0-3

@@ -5,7 +5,8 @@ export const fetchQuestionBatch = async (
   count: number = CONFIG.BATCH_SIZE,
   difficulty: Difficulty = Difficulty.Medium,
   model: GeminiModel = GeminiModel.Gemini25FlashLite,
-  previousQuestions: string[] = []
+  previousQuestions: string[] = [],
+  coveredTopics: string[] = []
 ): Promise<FlashcardData[]> => {
   try {
     const response = await fetch('/api/questions', {
@@ -13,7 +14,7 @@ export const fetchQuestionBatch = async (
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ count, difficulty, model, previousQuestions }),
+      body: JSON.stringify({ count, difficulty, model, previousQuestions, coveredTopics }),
     });
 
     if (!response.ok) {

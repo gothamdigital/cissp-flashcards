@@ -105,6 +105,13 @@ const App: React.FC = () => {
     if (!userAnswers[currentCard.id]) {
       const isCorrect = optionIndex === currentCard.correctAnswerIndex;
       recordAnswer(currentCard.id, currentCard.domain, optionIndex, isCorrect);
+
+      // Fire-and-forget feedback to D1 question bank
+      fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ questionId: currentCard.id, isCorrect }),
+      }).catch(() => {}); // Silently ignore errors
     }
   };
 

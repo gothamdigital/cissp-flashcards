@@ -7,5 +7,12 @@
   ],
   "observability": {
     "enabled": true
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cissp-questions",
+      "database_id": "34ff0473-f6a6-4f97-b604-6cb086afe683"
+    }
+  ]
 }

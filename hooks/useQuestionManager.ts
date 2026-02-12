@@ -35,6 +35,13 @@ export const useQuestionManager = (
     return history.map((q) => q.question);
   }, [history]);
 
+  /** Extract covered sub-topics from question history */
+  const getCoveredTopics = useCallback((): string[] => {
+    return history
+      .map((q) => q.subTopic)
+      .filter((t): t is string => !!t);
+  }, [history]);
+
   const loadQuestionsForDifficulty = useCallback(
     async (
       diff: Difficulty,
@@ -46,7 +53,10 @@ export const useQuestionManager = (
       setError(null);
       try {
         const previous = replace ? [] : getPreviousQuestionTexts();
-        const newQuestions = await fetchQuestionBatch(CONFIG.BATCH_SIZE, diff, selectedModel, previous);
+        const covered = replace ? [] : getCoveredTopics();
+        const newQuestions = await fetchQuestionBatch(
+          CONFIG.BATCH_SIZE, diff, selectedModel, previous, covered
+        );
 
         setHistory((prev) => {
           if (replace) {
@@ -70,7 +80,7 @@ export const useQuestionManager = (
         setIsLoading(false);
       }
     },
-    [getPreviousQuestionTexts]
+    [getPreviousQuestionTexts, getCoveredTopics]
   );
 
   const handleNext = useCallback(() => {
@@ -114,7 +124,10 @@ export const useQuestionManager = (
 
     if (shouldPrefetch) {
       prefetchInProgressRef.current = true;
-      fetchQuestionBatch(CONFIG.PREFETCH_SIZE, difficulty, model, getPreviousQuestionTexts())
+      const covered = getCoveredTopics();
+      fetchQuestionBatch(
+        CONFIG.PREFETCH_SIZE, difficulty, model, getPreviousQuestionTexts(), covered
+      )
         .then((newQs) => {
           setHistory((prev) => {
             const existingIds = new Set(prev.map((q) => q.id));
@@ -127,7 +140,7 @@ export const useQuestionManager = (
           prefetchInProgressRef.current = false;
         });
     }
-  }, [currentIndex, history.length, isLoading, error, difficulty, model, getPreviousQuestionTexts]);
+  }, [currentIndex, history.length, isLoading, error, difficulty, model, getPreviousQuestionTexts, getCoveredTopics]);
 
   return {
     history,
