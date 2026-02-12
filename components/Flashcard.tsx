@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FlashcardData, Difficulty } from '../types';
-import { Eye, CheckCircle, XCircle, ShieldCheck, BarChart } from 'lucide-react';
+import { Eye, CheckCircle, XCircle, ShieldCheck, BarChart, ExternalLink } from 'lucide-react';
 
 interface FlashcardProps {
   data: FlashcardData;
@@ -59,6 +59,14 @@ export const Flashcard: React.FC<FlashcardProps> = ({ data, savedSelection, onAn
     }
 
     return `${baseStyle} border-slate-800 bg-slate-900/50 opacity-50`;
+  };
+
+  const buildSearchQuery = (card: FlashcardData): string => {
+    const query = `CISSP ${card.domain}: ${card.question}`;
+    if (query.length <= 200) return query;
+    const truncated = query.slice(0, 200);
+    const lastSpace = truncated.lastIndexOf(' ');
+    return lastSpace > 0 ? truncated.slice(0, lastSpace) : truncated;
   };
 
   return (
@@ -134,6 +142,27 @@ export const Flashcard: React.FC<FlashcardProps> = ({ data, savedSelection, onAn
                 <p className="text-slate-300 leading-relaxed text-sm md:text-base">
                   {data.explanation}
                 </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <a
+                  href={`https://www.perplexity.ai/search?q=${encodeURIComponent(buildSearchQuery(data))}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-indigo-600 hover:bg-indigo-500 text-white transition-colors duration-200"
+                >
+                  <ExternalLink size={15} />
+                  Deep Dive on Perplexity
+                </a>
+                <a
+                  href={`https://www.google.com/search?udm=50&q=${encodeURIComponent(buildSearchQuery(data))}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-slate-700 hover:bg-slate-600 text-slate-300 transition-colors duration-200"
+                >
+                  <ExternalLink size={15} />
+                  Deep Dive on Google AI
+                </a>
               </div>
             </div>
           )}
