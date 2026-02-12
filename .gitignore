@@ -32,6 +32,8 @@ dist-ssr
 
 # Project specific
 tasks/
+memory/
+MEMORY.md
 .wrangler/
 preview_out
 vite_out
