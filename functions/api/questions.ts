@@ -160,21 +160,42 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
 
     const requestBody = (await context.request.json()) as {
       count?: number;
-      difficulty?: Difficulty;
+      difficulty?: string;
       model?: string;
-      previousQuestions?: string[];
-      coveredTopics?: string[];
+      previousQuestions?: unknown;
+      coveredTopics?: unknown;
     };
+
+    // Validate difficulty against known enum values
+    const VALID_DIFFICULTIES = new Set<string>(Object.values(Difficulty));
+    const VALID_MODELS = new Set(["gemini-3-flash-preview", "gemini-2.5-flash-lite"]);
+
+    if (requestBody.difficulty && !VALID_DIFFICULTIES.has(requestBody.difficulty)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid difficulty level" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    if (requestBody.model && !VALID_MODELS.has(requestBody.model)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid model selection" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
     const count = Math.min(
       Math.max(requestBody.count || CONFIG.BATCH_SIZE, CONFIG.MIN_QUESTIONS_PER_REQUEST),
       CONFIG.MAX_QUESTIONS_PER_REQUEST
     );
-    const difficulty = requestBody.difficulty || Difficulty.Medium;
+    const difficulty = (requestBody.difficulty as Difficulty) || Difficulty.Medium;
     const model = requestBody.model || "gemini-2.5-flash-lite";
-    const previousQuestions = (requestBody.previousQuestions || []).slice(
-      -CONFIG.MAX_PREVIOUS_QUESTIONS
-    );
-    const coveredTopics = requestBody.coveredTopics || [];
+    const previousQuestions = (Array.isArray(requestBody.previousQuestions) ? requestBody.previousQuestions : [])
+      .filter((q: unknown): q is string => typeof q === "string")
+      .slice(-CONFIG.MAX_PREVIOUS_QUESTIONS);
+    const coveredTopics = (Array.isArray(requestBody.coveredTopics) ? requestBody.coveredTopics : [])
+      .filter((t: unknown): t is string => typeof t === "string")
+      .slice(0, 200);
 
     // Select specific sub-topics for this batch
     const topicAssignments = selectUncoveredTopics(count, coveredTopics);
@@ -228,11 +249,11 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return new Response(JSON.stringify({ questions: allQuestions }), {
       headers: { "Content-Type": "application/json" },
     });
-  } catch (error: any) {
-    console.error("API Error:", error.message || error);
+  } catch (error: unknown) {
+    console.error("API Error:", error instanceof Error ? error.message : error);
     return new Response(
       JSON.stringify({
-        error: error.message || "Failed to generate questions. Please try again later.",
+        error: "Failed to generate questions. Please try again later.",
       }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
