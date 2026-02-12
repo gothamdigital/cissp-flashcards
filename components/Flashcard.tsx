@@ -69,6 +69,9 @@ export const Flashcard: React.FC<FlashcardProps> = ({ data, savedSelection, onAn
     return lastSpace > 0 ? truncated.slice(0, lastSpace) : truncated;
   };
 
+  const encodeQuery = (query: string): string =>
+    encodeURIComponent(query).replace(/%20/g, '+');
+
   return (
     <div className="w-full max-w-3xl mx-auto perspective-1000">
       <div className="bg-slate-800/80 backdrop-blur-xl border border-slate-700 rounded-3xl shadow-2xl overflow-hidden flex flex-col min-h-[500px]">
@@ -146,7 +149,7 @@ export const Flashcard: React.FC<FlashcardProps> = ({ data, savedSelection, onAn
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <a
-                  href={`https://www.perplexity.ai/search?q=${encodeURIComponent(buildSearchQuery(data))}`}
+                  href={`https://www.perplexity.ai/search?q=${encodeQuery(buildSearchQuery(data))}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-indigo-600 hover:bg-indigo-500 text-white transition-colors duration-200"
@@ -155,7 +158,7 @@ export const Flashcard: React.FC<FlashcardProps> = ({ data, savedSelection, onAn
                   Deep Dive on Perplexity
                 </a>
                 <a
-                  href={`https://www.google.com/search?udm=50&q=${encodeURIComponent(buildSearchQuery(data))}`}
+                  href={`https://www.google.com/search?udm=50&q=${encodeQuery(buildSearchQuery(data))}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-slate-700 hover:bg-slate-600 text-slate-300 transition-colors duration-200"
