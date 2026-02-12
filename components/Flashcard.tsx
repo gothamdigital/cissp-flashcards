@@ -62,11 +62,59 @@ export const Flashcard: React.FC<FlashcardProps> = ({ data, savedSelection, onAn
   };
 
   const buildSearchQuery = (card: FlashcardData): string => {
-    const query = `CISSP ${card.domain}: ${card.question}`;
-    if (query.length <= 400) return query;
-    const truncated = query.slice(0, 400);
-    const lastSpace = truncated.lastIndexOf(' ');
-    return lastSpace > 0 ? truncated.slice(0, lastSpace) : truncated;
+    const MAX_KEYWORDS = 12;
+
+    // Strip common exam question boilerplate phrases
+    const boilerplatePatterns = [
+      /which of the following\b/gi,
+      /what (?:is|are) the\b/gi,
+      /would (?:best|most likely)\b/gi,
+      /most (?:likely|appropriate|effective|important|accurate)\b/gi,
+      /best (?:describes?|approach|practice|method|way to)\b/gi,
+      /is (?:tasked with|responsible for|asked to)\b/gi,
+      /has been (?:asked to|tasked with)\b/gi,
+    ];
+
+    const stopWords = new Set([
+      'a', 'an', 'the', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+      'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+      'should', 'may', 'might', 'shall', 'can', 'not',
+      'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by', 'from',
+      'as', 'into', 'through', 'during', 'before', 'after',
+      'between', 'out', 'off', 'over', 'under', 'then',
+      'when', 'where', 'why', 'how', 'all', 'both',
+      'each', 'few', 'more', 'most', 'other', 'some', 'such',
+      'nor', 'only', 'own', 'same', 'so', 'than', 'too',
+      'very', 'just', 'because', 'but', 'and', 'or', 'if', 'while',
+      'that', 'which', 'who', 'whom', 'this', 'these', 'those', 'what',
+      'its', 'it', 'they', 'them', 'their', 'he', 'she', 'his', 'her',
+      'we', 'you', 'your', 'my', 'our', 'me', 'him', 'us',
+      // Exam scenario filler
+      'following', 'regarding', 'about', 'related', 'using', 'used',
+      'ensure', 'ensures', 'also', 'well', 'many', 'new', 'one',
+      'company', 'organization', 'enterprise', 'firm',
+      'manager', 'administrator', 'analyst',
+      'recently', 'currently', 'wants', 'needs', 'asked',
+      'large', 'small', 'given',
+    ]);
+
+    let text = card.question;
+    for (const pattern of boilerplatePatterns) {
+      text = text.replace(pattern, ' ');
+    }
+
+    // Words already covered by the domain prefix — avoid duplicates
+    const domainWords = new Set(card.domain.toLowerCase().replace(/[()]/g, '').split(/\s+/));
+
+    const keywords = text
+      .replace(/[?.!,;:'"(){}[\]]/g, ' ')
+      .split(/\s+/)
+      .map(w => w.toLowerCase())
+      .filter(w => w.length > 2 && !stopWords.has(w) && !domainWords.has(w))
+      .filter((w, i, arr) => arr.indexOf(w) === i)
+      .slice(0, MAX_KEYWORDS);
+
+    return `CISSP ${card.domain} ${keywords.join(' ')}`;
   };
 
   const encodeQuery = (query: string): string =>
