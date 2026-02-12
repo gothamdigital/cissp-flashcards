@@ -63,8 +63,8 @@ export const Flashcard: React.FC<FlashcardProps> = ({ data, savedSelection, onAn
 
   const buildSearchQuery = (card: FlashcardData): string => {
     const query = `CISSP ${card.domain}: ${card.question}`;
-    if (query.length <= 200) return query;
-    const truncated = query.slice(0, 200);
+    if (query.length <= 300) return query;
+    const truncated = query.slice(0, 300);
     const lastSpace = truncated.lastIndexOf(' ');
     return lastSpace > 0 ? truncated.slice(0, lastSpace) : truncated;
   };
