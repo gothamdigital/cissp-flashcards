@@ -31,6 +31,10 @@ export const useQuestionManager = (
   const [error, setError] = useState<string | null>(null);
   const prefetchInProgressRef = useRef<boolean>(false);
 
+  const getPreviousQuestionTexts = useCallback((): string[] => {
+    return history.map((q) => q.question);
+  }, [history]);
+
   const loadQuestionsForDifficulty = useCallback(
     async (
       diff: Difficulty,
@@ -41,7 +45,8 @@ export const useQuestionManager = (
       setIsLoading(true);
       setError(null);
       try {
-        const newQuestions = await fetchQuestionBatch(CONFIG.BATCH_SIZE, diff, selectedModel);
+        const previous = replace ? [] : getPreviousQuestionTexts();
+        const newQuestions = await fetchQuestionBatch(CONFIG.BATCH_SIZE, diff, selectedModel, previous);
 
         setHistory((prev) => {
           if (replace) {
@@ -65,7 +70,7 @@ export const useQuestionManager = (
         setIsLoading(false);
       }
     },
-    []
+    [getPreviousQuestionTexts]
   );
 
   const handleNext = useCallback(() => {
@@ -109,7 +114,7 @@ export const useQuestionManager = (
 
     if (shouldPrefetch) {
       prefetchInProgressRef.current = true;
-      fetchQuestionBatch(CONFIG.PREFETCH_SIZE, difficulty, model)
+      fetchQuestionBatch(CONFIG.PREFETCH_SIZE, difficulty, model, getPreviousQuestionTexts())
         .then((newQs) => {
           setHistory((prev) => {
             const existingIds = new Set(prev.map((q) => q.id));
@@ -122,7 +127,7 @@ export const useQuestionManager = (
           prefetchInProgressRef.current = false;
         });
     }
-  }, [currentIndex, history.length, isLoading, error, difficulty, model]);
+  }, [currentIndex, history.length, isLoading, error, difficulty, model, getPreviousQuestionTexts]);
 
   return {
     history,

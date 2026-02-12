@@ -5,7 +5,8 @@ import { GoogleGenAI, HarmCategory, HarmBlockThreshold, Type } from "@google/gen
 const CONFIG = {
   BATCH_SIZE: 10,
   MAX_QUESTIONS_PER_REQUEST: 20,
-  MIN_QUESTIONS_PER_REQUEST: 1
+  MIN_QUESTIONS_PER_REQUEST: 1,
+  MAX_PREVIOUS_QUESTIONS: 50
 } as const;
 
 interface Env {
@@ -18,10 +19,18 @@ enum Difficulty {
   Hard = "Hard"
 }
 
+/** Generate a deterministic short ID from question text using Web Crypto API */
+async function hashQuestion(text: string): Promise<string> {
+  const data = new TextEncoder().encode(text.trim().toLowerCase());
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer).slice(0, 8));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   try {
     const apiKey = context.env.GEMINI_API_KEY;
-    
+
     if (!apiKey) {
       return new Response(JSON.stringify({ error: "Server configuration error: Missing API Key" }), {
         status: 500,
@@ -29,13 +38,19 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       });
     }
 
-    const requestBody = await context.request.json() as { count?: number; difficulty?: Difficulty; model?: string };
+    const requestBody = await context.request.json() as {
+      count?: number;
+      difficulty?: Difficulty;
+      model?: string;
+      previousQuestions?: string[];
+    };
     const count = Math.min(
       Math.max(requestBody.count || CONFIG.BATCH_SIZE, CONFIG.MIN_QUESTIONS_PER_REQUEST),
       CONFIG.MAX_QUESTIONS_PER_REQUEST
     );
     const difficulty = requestBody.difficulty || Difficulty.Medium;
     const model = requestBody.model || "gemini-2.5-flash-lite";
+    const previousQuestions = (requestBody.previousQuestions || []).slice(-CONFIG.MAX_PREVIOUS_QUESTIONS);
 
     const domains = [
       "Security and Risk Management",
@@ -57,16 +72,21 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     // Use the @google/genai (V1) SDK style
     const client = new GoogleGenAI({ apiKey });
     
+    const avoidSection = previousQuestions.length > 0
+      ? `\n\n      CRITICAL — Do NOT repeat or rephrase any of these previously asked questions. Each new question must cover a DIFFERENT topic, scenario, and concept:\n${previousQuestions.map((q, i) => `      ${i + 1}. ${q}`).join("\n")}`
+      : "";
+
     const prompt = `Generate ${count} unique, high-quality CISSP practice exam questions.
-      
+
       Difficulty Level: ${difficulty} (${difficultyRubric[difficulty]})
-      
+
       Requirements:
       1. Domains: Randomly select from: ${domains.join(", ")}.
       2. Format: Scenario-based. Each question must provide a realistic professional context.
       3. Options: Provide 4 plausible multiple-choice options.
       4. Distractors: Distractors should be technically accurate security concepts but incorrect for the specific scenario or less effective than the correct answer.
-      5. Explanation: Provide a comprehensive explanation that clarifies why the correct answer is superior and briefly explains why other distractors are incorrect or less ideal in this context.`;
+      5. Explanation: Provide a comprehensive explanation that clarifies why the correct answer is superior and briefly explains why other distractors are incorrect or less ideal in this context.
+      6. Variety: Each question MUST cover a distinctly different topic and scenario. Avoid repeating the same security concepts across questions.${avoidSection}`;
 
     const response = await client.models.generateContent({
       model: model,
@@ -119,7 +139,17 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
       throw new Error("The AI returned an empty response.");
     }
 
-    return new Response(text, {
+    // Replace Gemini-generated IDs with deterministic content-based hashes
+    const parsed = JSON.parse(text) as { questions: Array<{ id: string; question: string }> };
+    if (parsed.questions) {
+      await Promise.all(
+        parsed.questions.map(async (q) => {
+          q.id = await hashQuestion(q.question);
+        })
+      );
+    }
+
+    return new Response(JSON.stringify(parsed), {
       headers: { "Content-Type": "application/json" },
     });
 
