@@ -228,10 +228,12 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         apiKey, model, difficulty, remainingAssignments, previousQuestions
       );
 
-      // Save newly generated questions to D1 (fire-and-forget)
+      // Save newly generated questions to D1 (background, survives response)
       if (db && generatedQuestions.length > 0) {
-        saveQuestions(db, generatedQuestions).catch((err) =>
-          console.warn("Failed to save questions to D1:", err)
+        context.waitUntil(
+          saveQuestions(db, generatedQuestions).catch((err) =>
+            console.warn("Failed to save questions to D1:", err)
+          )
         );
       }
     }
@@ -239,10 +241,12 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     // Merge banked + generated
     const allQuestions = [...bankedQuestions, ...generatedQuestions];
 
-    // Increment times_served for all returned questions (fire-and-forget)
+    // Increment times_served for all returned questions (background, survives response)
     if (db && allQuestions.length > 0) {
-      incrementServed(db, allQuestions.map((q) => q.id)).catch((err) =>
-        console.warn("Failed to increment served count:", err)
+      context.waitUntil(
+        incrementServed(db, allQuestions.map((q) => q.id)).catch((err) =>
+          console.warn("Failed to increment served count:", err)
+        )
       );
     }
 
