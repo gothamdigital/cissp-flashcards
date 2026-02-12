@@ -84,7 +84,9 @@ export class ErrorBoundary extends Component<Props, State> {
                 <div className="bg-slate-900/50 border border-slate-700 rounded-xl p-4">
                   <h3 className="text-sm font-semibold text-rose-400 mb-2">Error Message:</h3>
                   <p className="text-slate-300 font-mono text-sm break-all">
-                    {this.state.error.message}
+                    {import.meta.env.DEV
+                      ? this.state.error.message
+                      : "An unexpected error occurred. Please try again."}
                   </p>
                 </div>
               )}
