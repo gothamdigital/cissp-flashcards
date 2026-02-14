@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { X, PieChart, CheckCircle, AlertCircle, TrendingUp } from 'lucide-react';
+import { X, TrendingUp } from 'lucide-react';
 import { UserAnswer } from '../types';
 import { CONFIG } from '../config';
 
@@ -16,9 +16,8 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ isOpen, on
     const correct = answerList.filter(a => a.isCorrect).length;
     const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
 
-    // Group by domain
     const byDomain: Record<string, { total: number; correct: number }> = {};
-    
+
     answerList.forEach(a => {
       if (!byDomain[a.domain]) {
         byDomain[a.domain] = { total: 0, correct: 0 };
@@ -38,102 +37,95 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ isOpen, on
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-slate-800 border border-slate-700 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-        
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
+      <div className="bg-zinc-950 border border-zinc-800 w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden">
+
         {/* Header */}
-        <div className="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-900/50">
-          <div className="flex items-center gap-3">
-            <div className="bg-slate-500/20 p-2 rounded-lg text-slate-400">
-              <PieChart size={24} />
-            </div>
-            <h2 className="text-xl font-bold text-slate-100">Study Progress</h2>
-          </div>
-          <button 
+        <div className="px-6 py-4 border-b border-zinc-800 flex justify-between items-center">
+          <h2 className="text-sm font-medium uppercase tracking-widest text-zinc-300">
+            Study Progress
+          </h2>
+          <button
             onClick={onClose}
-            className="p-2 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"
+            className="p-1.5 hover:bg-zinc-800 text-zinc-600 hover:text-zinc-300 transition-colors cursor-pointer"
           >
-            <X size={24} />
+            <X size={18} />
           </button>
         </div>
 
         {/* Content */}
-        <div className="overflow-y-auto p-6 space-y-8 custom-scrollbar">
-          
-          {/* Top Level Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-700/50 flex flex-col items-center justify-center text-center">
-              <span className="text-slate-400 text-sm font-medium uppercase tracking-wider mb-1">Total Answered</span>
-              <span className="text-4xl font-bold text-white">{stats.total}</span>
+        <div className="overflow-y-auto p-6 space-y-6">
+
+          {/* Stats Row */}
+          <div className="grid grid-cols-3 gap-px bg-zinc-800">
+            <div className="bg-zinc-950 p-5 text-center">
+              <div className="text-[11px] font-medium uppercase tracking-widest text-zinc-600 mb-2">
+                Answered
+              </div>
+              <div className="text-2xl font-bold text-white font-mono">{stats.total}</div>
             </div>
-            
-            <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-700/50 flex flex-col items-center justify-center text-center">
-              <span className="text-slate-400 text-sm font-medium uppercase tracking-wider mb-1">Accuracy</span>
-              <div className="flex items-center gap-2">
-                 <span className={`text-4xl font-bold ${
-                   stats.accuracy >= CONFIG.ACCURACY_THRESHOLDS.HIGH ? 'text-emerald-400' :
-                   stats.accuracy >= CONFIG.ACCURACY_THRESHOLDS.MEDIUM ? 'text-yellow-400' :
-                   'text-rose-400'
-                 }`}>
+
+            <div className="bg-zinc-950 p-5 text-center">
+              <div className="text-[11px] font-medium uppercase tracking-widest text-zinc-600 mb-2">
+                Accuracy
+              </div>
+              <div className="flex items-center justify-center gap-2">
+                <span className={`text-2xl font-bold font-mono ${
+                  stats.accuracy >= CONFIG.ACCURACY_THRESHOLDS.HIGH ? 'text-emerald-500' :
+                  stats.accuracy >= CONFIG.ACCURACY_THRESHOLDS.MEDIUM ? 'text-amber-500' :
+                  'text-red-500'
+                }`}>
                   {stats.accuracy}%
                 </span>
-                <TrendingUp size={20} className="text-slate-500" />
+                <TrendingUp size={14} className="text-zinc-700" />
               </div>
             </div>
 
-            <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-700/50 flex flex-col items-center justify-center text-center">
-              <span className="text-slate-400 text-sm font-medium uppercase tracking-wider mb-1">Performance</span>
-              <div className="flex gap-4 mt-1">
-                <div className="flex items-center gap-1.5 text-emerald-400">
-                  <CheckCircle size={16} />
-                  <span className="font-bold text-xl">{stats.correct}</span>
-                </div>
-                <div className="w-px bg-slate-700 h-8"></div>
-                <div className="flex items-center gap-1.5 text-rose-400">
-                  <AlertCircle size={16} />
-                  <span className="font-bold text-xl">{stats.total - stats.correct}</span>
-                </div>
+            <div className="bg-zinc-950 p-5 text-center">
+              <div className="text-[11px] font-medium uppercase tracking-widest text-zinc-600 mb-2">
+                Score
+              </div>
+              <div className="text-2xl font-bold font-mono">
+                <span className="text-emerald-500">{stats.correct}</span>
+                <span className="text-zinc-700 mx-1">/</span>
+                <span className="text-red-500">{stats.total - stats.correct}</span>
               </div>
             </div>
           </div>
 
           {/* Domain Breakdown */}
           <div>
-            <h3 className="text-lg font-semibold text-slate-200 mb-4">Domain Mastery</h3>
+            <h3 className="text-[11px] font-medium uppercase tracking-widest text-zinc-500 mb-4">
+              Domain Mastery
+            </h3>
             {Object.keys(stats.byDomain).length === 0 ? (
-              <div className="text-center py-10 text-slate-500 italic bg-slate-900/30 rounded-xl border border-slate-800 border-dashed">
+              <div className="text-center py-8 text-zinc-600 text-sm border border-zinc-800 border-dashed">
                 Answer more questions to see domain breakdown
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-3">
                 {Object.entries(stats.byDomain).map(([domain, data]: [string, { total: number, correct: number }]) => {
                   const percentage = Math.round((data.correct / data.total) * 100);
                   return (
-                    <div key={domain} className="bg-slate-900/40 p-4 rounded-xl border border-slate-800">
+                    <div key={domain} className="border border-zinc-800 p-4">
                       <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium text-slate-300 text-sm md:text-base">{domain}</span>
-                        <div className="flex items-center gap-2 text-xs font-mono">
-                          <span className="text-emerald-400">{data.correct}</span>
-                          <span className="text-slate-600">/</span>
-                          <span className="text-slate-400">{data.total}</span>
-                        </div>
+                        <span className="text-sm text-zinc-400">{domain}</span>
+                        <span className="text-xs font-mono text-zinc-600">
+                          {data.correct}/{data.total}
+                        </span>
                       </div>
-                      
-                      {/* Progress Bar Container */}
-                      <div className="h-3 w-full bg-slate-800 rounded-full overflow-hidden flex">
-                        {/* Correct Portion */}
-                        <div 
-                          className="h-full bg-emerald-500 transition-all duration-500 ease-out"
+                      <div className="h-1.5 w-full bg-zinc-900 flex">
+                        <div
+                          className="h-full bg-emerald-600 transition-all duration-500"
                           style={{ width: `${percentage}%` }}
-                        ></div>
-                        {/* Incorrect Portion (fills the rest implicitly by being transparent against bg, or explicit red) */}
-                        <div 
-                          className="h-full bg-rose-500/50 transition-all duration-500 ease-out"
+                        />
+                        <div
+                          className="h-full bg-red-900/50 transition-all duration-500"
                           style={{ width: `${100 - percentage}%` }}
-                        ></div>
+                        />
                       </div>
-                      <div className="mt-1 text-right text-xs text-slate-500">
-                        {percentage}% Correct
+                      <div className="mt-1.5 text-right text-[11px] text-zinc-600 font-mono">
+                        {percentage}%
                       </div>
                     </div>
                   );
@@ -141,16 +133,16 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ isOpen, on
               </div>
             )}
           </div>
-
         </div>
-        
-        <div className="p-4 border-t border-slate-700 bg-slate-900/50 flex justify-end">
-           <button 
-             onClick={onClose}
-             className="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors"
-           >
-             Close Dashboard
-           </button>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-zinc-800 flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-5 py-2 bg-white text-zinc-950 text-sm font-medium hover:bg-zinc-200 transition-colors cursor-pointer"
+          >
+            Close
+          </button>
         </div>
       </div>
     </div>

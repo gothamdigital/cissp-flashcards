@@ -2,31 +2,36 @@
 
 @theme {
   --font-sans: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', ui-monospace, monospace;
 }
 
 /* Global styles */
 @layer base {
   body {
-    @apply m-0 p-0 font-sans;
-    background-color: #0f172a; /* Slate 900 */
-    color: #e2e8f0; /* Slate 200 */
+    @apply m-0 p-0 font-sans antialiased;
+    background-color: #09090b; /* zinc-950 */
+    color: #e4e4e7; /* zinc-200 */
+  }
+
+  ::selection {
+    background-color: rgba(255, 255, 255, 0.12);
   }
 }
 
-/* Custom scrollbar styles */
+/* Custom scrollbar — minimal dark */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1e293b;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #475569;
-  border-radius: 4px;
+  background: #27272a;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: #3f3f46;
 }

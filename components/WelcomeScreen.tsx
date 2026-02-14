@@ -1,7 +1,6 @@
 import React from 'react';
-import { BookOpen, RefreshCcw } from 'lucide-react';
 import { Difficulty, GeminiModel } from '../types';
-import { LoadingSpinner } from './LoadingSpinner'; 
+import { LoadingSpinner } from './LoadingSpinner';
 
 interface WelcomeScreenProps {
   onStartSession: (difficulty: Difficulty, model: GeminiModel) => void;
@@ -12,32 +11,36 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStartSession, is
   const [selectedModel, setSelectedModel] = React.useState<GeminiModel | null>(null);
 
   return (
-    <div className="flex flex-col items-center justify-start p-8 text-center max-w-2xl mx-auto">
-      <p className="text-slate-300 text-lg mb-8 leading-relaxed text-justify">
-        Sharpen your cybersecurity knowledge with CISSP Master. This platform generates dynamic, scenario-based practice questions across all CISSP domains, powered by cutting-edge AI.
-        <br /><br />
-        Select an AI model and a difficulty level to begin your personalized study session.
+    <div className="flex flex-col items-center justify-start text-center max-w-xl mx-auto pt-8">
+      <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-4">
+        CISSP Master
+      </h1>
+      <p className="text-zinc-500 text-sm leading-relaxed mb-12 max-w-md">
+        Dynamic, scenario-based practice questions across all eight CISSP domains. Powered by AI, calibrated to your level.
       </p>
 
-      <div className="bg-slate-800/50 border border-slate-700 p-8 rounded-3xl backdrop-blur-sm w-full mb-8">
-        <h2 className="text-xl font-semibold text-slate-200 mb-6">Select Gemini Model:</h2>
-        <div className="flex flex-wrap justify-center gap-4">
+      {/* Model Selection */}
+      <div className="w-full border border-zinc-800 p-6 mb-4">
+        <h2 className="text-[11px] font-medium uppercase tracking-widest text-zinc-500 mb-5">
+          Select Model
+        </h2>
+        <div className="flex flex-col sm:flex-row gap-2">
           <button
             onClick={() => setSelectedModel(GeminiModel.Gemini3Flash)}
-            className={`px-6 py-3 rounded-xl border-2 transition-all font-medium cursor-pointer ${
+            className={`flex-1 px-5 py-3 border text-sm font-medium transition-colors cursor-pointer ${
               selectedModel === GeminiModel.Gemini3Flash
-                ? 'bg-blue-600/20 border-blue-500 text-blue-200 shadow-lg shadow-blue-500/20'
-                : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500'
+                ? 'border-zinc-400 text-white bg-zinc-900'
+                : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
             }`}
           >
             Gemini 3 Flash
           </button>
           <button
             onClick={() => setSelectedModel(GeminiModel.Gemini25FlashLite)}
-            className={`px-6 py-3 rounded-xl border-2 transition-all font-medium cursor-pointer ${
+            className={`flex-1 px-5 py-3 border text-sm font-medium transition-colors cursor-pointer ${
               selectedModel === GeminiModel.Gemini25FlashLite
-                ? 'bg-blue-600/20 border-blue-500 text-blue-200 shadow-lg shadow-blue-500/20'
-                : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500'
+                ? 'border-zinc-400 text-white bg-zinc-900'
+                : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
             }`}
           >
             Gemini 2.5 Flash Lite
@@ -45,38 +48,38 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStartSession, is
         </div>
       </div>
 
-      <div className="bg-slate-800/50 border border-slate-700 p-8 rounded-3xl backdrop-blur-sm w-full">
-        <h2 className="text-xl font-semibold text-slate-200 mb-6">Choose Your Challenge:</h2>
-        <div className="flex flex-wrap justify-center gap-4">
-          <button
-            onClick={() => selectedModel && onStartSession(Difficulty.Easy, selectedModel)}
-            className="px-8 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-emerald-900/20 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer disabled:scale-100"
-            disabled={isLoading || !selectedModel}
-          >
-            Easy
-          </button>
-          <button
-            onClick={() => selectedModel && onStartSession(Difficulty.Medium, selectedModel)}
-            className="px-8 py-4 rounded-2xl bg-slate-600 hover:bg-slate-500 text-white font-bold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-slate-900/20 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer disabled:scale-100"
-            disabled={isLoading || !selectedModel}
-          >
-            Medium
-          </button>
-          <button
-            onClick={() => selectedModel && onStartSession(Difficulty.Hard, selectedModel)}
-            className="px-8 py-4 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-rose-900/20 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer disabled:scale-100"
-            disabled={isLoading || !selectedModel}
-          >
-            Hard
-          </button>
+      {/* Difficulty Selection */}
+      <div className="w-full border border-zinc-800 p-6">
+        <h2 className="text-[11px] font-medium uppercase tracking-widest text-zinc-500 mb-5">
+          Difficulty
+        </h2>
+        <div className="flex gap-2">
+          {[Difficulty.Easy, Difficulty.Medium, Difficulty.Hard].map((diff) => (
+            <button
+              key={diff}
+              onClick={() => selectedModel && onStartSession(diff, selectedModel)}
+              disabled={isLoading || !selectedModel}
+              className={`flex-1 py-3.5 text-sm font-medium transition-all cursor-pointer
+                ${!selectedModel || isLoading
+                  ? 'border border-zinc-900 text-zinc-700 cursor-not-allowed'
+                  : 'bg-white text-zinc-950 hover:bg-zinc-200 active:bg-zinc-300'
+                }`}
+            >
+              {diff}
+            </button>
+          ))}
         </div>
         {!selectedModel && (
-          <p className="mt-4 text-sm text-slate-400 italic">Please select a model above to enable difficulty levels</p>
+          <p className="mt-4 text-[11px] text-zinc-600 uppercase tracking-wider">
+            Select a model to continue
+          </p>
         )}
       </div>
 
       {isLoading && (
-        <LoadingSpinner message="Generating your first batch of questions..." />
+        <div className="mt-8">
+          <LoadingSpinner message="Generating questions..." />
+        </div>
       )}
     </div>
   );

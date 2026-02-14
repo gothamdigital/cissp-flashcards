@@ -30,7 +30,6 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    // Log error to console in development
     console.error('ErrorBoundary caught an error:', error, errorInfo);
 
     this.setState({
@@ -56,34 +55,32 @@ export class ErrorBoundary extends Component<Props, State> {
 
   render(): ReactNode {
     if (this.state.hasError) {
-      // Custom fallback UI
       if (this.props.fallback) {
         return this.props.fallback;
       }
 
-      // Default error UI
       return (
-        <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center p-4">
-          <div className="max-w-2xl w-full bg-slate-800 border border-slate-700 rounded-3xl shadow-2xl overflow-hidden">
+        <div className="min-h-screen bg-zinc-950 text-zinc-200 flex items-center justify-center p-4">
+          <div className="max-w-lg w-full border border-zinc-800 overflow-hidden">
             {/* Header */}
-            <div className="bg-gradient-to-br from-rose-600 to-rose-700 p-8 text-center">
-              <div className="bg-white/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm border border-white/30">
-                <AlertCircle className="text-white w-10 h-10" />
+            <div className="border-b border-zinc-800 p-8 text-center">
+              <div className="w-12 h-12 border border-zinc-700 flex items-center justify-center mx-auto mb-5">
+                <AlertCircle className="text-zinc-400 w-6 h-6" />
               </div>
-              <h1 className="text-3xl font-bold text-white mb-2">
-                Oops! Something went wrong
+              <h1 className="text-xl font-bold text-white mb-2">
+                Something went wrong
               </h1>
-              <p className="text-rose-100">
-                We encountered an unexpected error. Don't worry, your progress is safe.
+              <p className="text-zinc-500 text-sm">
+                An unexpected error occurred. Your progress is safe.
               </p>
             </div>
 
             {/* Error Details */}
-            <div className="p-8 space-y-6">
+            <div className="p-6 space-y-4">
               {this.state.error && (
-                <div className="bg-slate-900/50 border border-slate-700 rounded-xl p-4">
-                  <h3 className="text-sm font-semibold text-rose-400 mb-2">Error Message:</h3>
-                  <p className="text-slate-300 font-mono text-sm break-all">
+                <div className="border border-zinc-800 p-4">
+                  <h3 className="text-[11px] font-medium uppercase tracking-widest text-zinc-500 mb-2">Error</h3>
+                  <p className="text-zinc-400 font-mono text-sm break-all">
                     {import.meta.env.DEV
                       ? this.state.error.message
                       : "An unexpected error occurred. Please try again."}
@@ -91,32 +88,30 @@ export class ErrorBoundary extends Component<Props, State> {
                 </div>
               )}
 
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={this.handleReset}
-                  className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-white text-slate-900 rounded-xl font-bold hover:bg-slate-100 transition-all active:scale-[0.98] shadow-lg"
+                  className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-white text-zinc-950 text-sm font-medium hover:bg-zinc-200 transition-colors cursor-pointer"
                 >
-                  <RefreshCcw size={20} />
+                  <RefreshCcw size={14} />
                   Try Again
                 </button>
                 <button
                   onClick={this.handleReload}
-                  className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-slate-700 text-slate-200 rounded-xl font-bold hover:bg-slate-600 transition-all border border-slate-600"
+                  className="flex-1 flex items-center justify-center gap-2 px-5 py-3 border border-zinc-800 text-zinc-400 text-sm font-medium hover:border-zinc-600 hover:text-zinc-200 transition-colors cursor-pointer"
                 >
-                  <Home size={20} />
+                  <Home size={14} />
                   Reload App
                 </button>
               </div>
 
-              {/* Developer Info (only in development) */}
               {import.meta.env.DEV && this.state.errorInfo && (
-                <details className="mt-6">
-                  <summary className="cursor-pointer text-sm text-slate-400 hover:text-slate-300 font-medium">
-                    Developer Information (Click to expand)
+                <details className="mt-4">
+                  <summary className="cursor-pointer text-[11px] text-zinc-600 hover:text-zinc-400 font-medium uppercase tracking-wider">
+                    Stack Trace
                   </summary>
-                  <div className="mt-3 bg-slate-900 border border-slate-700 rounded-lg p-4 overflow-auto max-h-96">
-                    <pre className="text-xs text-slate-300 whitespace-pre-wrap font-mono">
+                  <div className="mt-2 border border-zinc-800 p-4 overflow-auto max-h-64">
+                    <pre className="text-xs text-zinc-500 whitespace-pre-wrap font-mono">
                       {this.state.errorInfo.componentStack}
                     </pre>
                   </div>
