@@ -3,7 +3,8 @@ import React from 'react';
 export const SkeletonCard: React.FC = () => {
   return (
     <div className="w-full max-w-3xl mx-auto">
-      <div className="border border-zinc-800 bg-zinc-950 flex flex-col min-h-[480px] animate-pulse">
+      <div className="border border-zinc-800 bg-zinc-950 flex flex-col min-h-[480px] animate-pulse relative">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-accent opacity-50" />
 
         {/* Header */}
         <div className="px-6 py-4 border-b border-zinc-800 flex justify-between items-center">
@@ -37,6 +38,9 @@ export const SkeletonCard: React.FC = () => {
           <div className="h-11 w-full bg-zinc-900" />
         </div>
       </div>
+      <p className="text-center text-zinc-600 text-xs uppercase tracking-wider mt-4">
+        Generating your first batch...
+      </p>
     </div>
   );
 };

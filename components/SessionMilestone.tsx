@@ -49,7 +49,7 @@ export const SessionMilestone: React.FC<SessionMilestoneProps> = ({
                   onClick={() => setSelectedDifficulty(diff)}
                   className={`flex-1 py-2.5 text-sm font-medium transition-colors cursor-pointer border ${
                     selectedDifficulty === diff
-                      ? 'border-zinc-400 text-white bg-zinc-900'
+                      ? 'border-accent text-accent bg-zinc-900'
                       : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
                   }`}
                 >
@@ -62,7 +62,7 @@ export const SessionMilestone: React.FC<SessionMilestoneProps> = ({
           <div className="flex flex-col gap-2">
             <button
               onClick={() => onContinue(selectedDifficulty)}
-              className="w-full py-3.5 bg-white text-zinc-950 text-sm font-medium uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-zinc-200 transition-colors cursor-pointer"
+              className="w-full py-3.5 bg-accent text-zinc-950 text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-accent-hover transition-colors cursor-pointer"
             >
               <Play size={14} fill="currentColor" />
               Continue

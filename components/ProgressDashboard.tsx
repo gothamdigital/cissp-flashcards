@@ -95,7 +95,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ isOpen, on
 
           {/* Domain Breakdown */}
           <div>
-            <h3 className="text-[11px] font-medium uppercase tracking-widest text-zinc-500 mb-4">
+            <h3 className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 mb-4">
               Domain Mastery
             </h3>
             {Object.keys(stats.byDomain).length === 0 ? (
@@ -139,7 +139,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ isOpen, on
         <div className="px-6 py-4 border-t border-zinc-800 flex justify-end">
           <button
             onClick={onClose}
-            className="px-5 py-2 bg-white text-zinc-950 text-sm font-medium hover:bg-zinc-200 transition-colors cursor-pointer"
+            className="px-5 py-2 bg-accent text-zinc-950 text-sm font-bold hover:bg-accent-hover transition-colors cursor-pointer"
           >
             Close
           </button>

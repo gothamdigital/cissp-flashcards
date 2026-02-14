@@ -1,6 +1,7 @@
 import React from 'react';
 import { Difficulty, GeminiModel } from '../types';
 import { LoadingSpinner } from './LoadingSpinner';
+import { ShieldCheck } from 'lucide-react';
 
 interface WelcomeScreenProps {
   onStartSession: (difficulty: Difficulty, model: GeminiModel) => void;
@@ -12,11 +13,14 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStartSession, is
 
   return (
     <div className="flex flex-col items-center justify-start text-center max-w-xl mx-auto pt-8">
+      <div className="w-14 h-14 border border-zinc-800 flex items-center justify-center mb-6">
+        <ShieldCheck className="w-7 h-7 text-accent" />
+      </div>
       <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-4">
         CISSP Master
       </h1>
       <p className="text-zinc-500 text-sm leading-relaxed mb-12 max-w-md">
-        Dynamic, scenario-based practice questions across all eight CISSP domains. Powered by AI, calibrated to your level.
+        150+ sub-topics across 8 CISSP domains. AI-generated scenario questions calibrated to your level.
       </p>
 
       {/* Model Selection */}
@@ -27,9 +31,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStartSession, is
         <div className="flex flex-col sm:flex-row gap-2">
           <button
             onClick={() => setSelectedModel(GeminiModel.Gemini3Flash)}
-            className={`flex-1 px-5 py-3 border text-sm font-medium transition-colors cursor-pointer ${
+            className={`flex-1 px-5 py-3 border text-sm font-bold uppercase tracking-widest transition-colors cursor-pointer ${
               selectedModel === GeminiModel.Gemini3Flash
-                ? 'border-zinc-400 text-white bg-zinc-900'
+                ? 'border-accent text-accent bg-zinc-900'
                 : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
             }`}
           >
@@ -37,9 +41,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStartSession, is
           </button>
           <button
             onClick={() => setSelectedModel(GeminiModel.Gemini25FlashLite)}
-            className={`flex-1 px-5 py-3 border text-sm font-medium transition-colors cursor-pointer ${
+            className={`flex-1 px-5 py-3 border text-sm font-bold uppercase tracking-widest transition-colors cursor-pointer ${
               selectedModel === GeminiModel.Gemini25FlashLite
-                ? 'border-zinc-400 text-white bg-zinc-900'
+                ? 'border-accent text-accent bg-zinc-900'
                 : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
             }`}
           >
@@ -49,20 +53,24 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStartSession, is
       </div>
 
       {/* Difficulty Selection */}
-      <div className="w-full border border-zinc-800 p-6">
+      <div className={`w-full border border-zinc-800 p-6 transition-opacity ${!selectedModel ? 'opacity-40' : ''}`}>
         <h2 className="text-[11px] font-medium uppercase tracking-widest text-zinc-500 mb-5">
           Difficulty
         </h2>
         <div className="flex gap-2">
-          {[Difficulty.Easy, Difficulty.Medium, Difficulty.Hard].map((diff) => (
+          {[Difficulty.Easy, Difficulty.Medium, Difficulty.Hard].map((diff, i) => (
             <button
               key={diff}
               onClick={() => selectedModel && onStartSession(diff, selectedModel)}
               disabled={isLoading || !selectedModel}
-              className={`flex-1 py-3.5 text-sm font-medium transition-all cursor-pointer
+              className={`flex-1 py-3.5 text-sm font-bold uppercase tracking-wider transition-all
                 ${!selectedModel || isLoading
                   ? 'border border-zinc-900 text-zinc-700 cursor-not-allowed'
-                  : 'bg-white text-zinc-950 hover:bg-zinc-200 active:bg-zinc-300'
+                  : i === 0
+                    ? 'bg-accent/70 text-zinc-950 hover:bg-accent active:scale-[0.98] cursor-pointer'
+                    : i === 1
+                      ? 'bg-accent text-zinc-950 hover:bg-accent-hover active:scale-[0.98] cursor-pointer'
+                      : 'bg-accent text-zinc-950 hover:bg-accent-hover active:scale-[0.98] ring-1 ring-accent-hover cursor-pointer'
                 }`}
             >
               {diff}

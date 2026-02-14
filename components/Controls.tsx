@@ -17,10 +17,10 @@ export const Controls: React.FC<ControlsProps> = ({ hasPrev, hasNext, onPrev, on
         <button
           onClick={onPrev}
           disabled={!hasPrev || isLoading}
-          className={`flex items-center gap-2 px-5 py-2.5 text-sm font-medium transition-colors
+          className={`flex items-center gap-2 px-6 py-3 text-sm font-medium uppercase tracking-wider transition-all
             ${!hasPrev || isLoading
-              ? 'text-zinc-700 cursor-not-allowed'
-              : 'border border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-white cursor-pointer'}
+              ? 'text-zinc-800 border-zinc-900 cursor-not-allowed'
+              : 'border border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-white cursor-pointer active:scale-[0.98]'}
           `}
         >
           <ChevronLeft size={16} />
@@ -34,10 +34,10 @@ export const Controls: React.FC<ControlsProps> = ({ hasPrev, hasNext, onPrev, on
         <button
           onClick={onNext}
           disabled={isLoading}
-          className={`flex items-center gap-2 px-5 py-2.5 text-sm font-medium transition-colors cursor-pointer
+          className={`flex items-center gap-2 px-6 py-3 text-sm font-bold uppercase tracking-widest transition-all
             ${isLoading
               ? 'text-zinc-600 border border-zinc-800 cursor-not-allowed'
-              : 'bg-white text-zinc-950 hover:bg-zinc-200'}
+              : 'bg-accent text-zinc-950 hover:bg-accent-hover active:scale-[0.98] shadow-lg shadow-accent/10 cursor-pointer'}
           `}
         >
           <span className="hidden sm:inline">Next</span>

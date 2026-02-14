@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Flashcard } from './components/Flashcard';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Flashcard, FlashcardHandle } from './components/Flashcard';
 import { Controls } from './components/Controls';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { SkeletonCard } from './components/SkeletonCard';
@@ -32,6 +32,11 @@ const App: React.FC = () => {
   } = useQuestionManager(difficulty, model, () => setShowMilestone(true));
 
   const { userAnswers, handleAnswer: recordAnswer, resetAnswers } = useAnswerTracking();
+  const flashcardRef = useRef<FlashcardHandle>(null);
+
+  const handleNext = useCallback(() => {
+    handleNextQuestion();
+  }, [handleNextQuestion]);
 
   // Initialize the first batch when session starts
   useEffect(() => {
@@ -40,6 +45,39 @@ const App: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showWelcomeScreen]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    if (showWelcomeScreen || showStats || showMilestone) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+      switch (e.key) {
+        case '1': case '2': case '3': case '4':
+          flashcardRef.current?.selectOption(parseInt(e.key) - 1);
+          break;
+        case 'a': case 'b': case 'c': case 'd':
+          flashcardRef.current?.selectOption(e.key.charCodeAt(0) - 97);
+          break;
+        case 'Enter':
+        case ' ':
+          e.preventDefault();
+          flashcardRef.current?.revealAnswer();
+          break;
+        case 'ArrowRight':
+          handleNext();
+          break;
+        case 'ArrowLeft':
+          if (currentIndex > 0) handlePrev();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showWelcomeScreen, showStats, showMilestone, currentIndex, handleNext, handlePrev]);
 
   const handleDifficultyChange = (newDifficulty: Difficulty) => {
     if (newDifficulty === difficulty) return;
@@ -69,10 +107,6 @@ const App: React.FC = () => {
       setShowWelcomeScreen(true);
     }
   };
-
-  const handleNext = useCallback(() => {
-    handleNextQuestion();
-  }, [handleNextQuestion]);
 
   const handleContinueSession = (newDifficulty: Difficulty) => {
     setShowMilestone(false);
@@ -114,28 +148,29 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-200">
       {/* Navbar */}
-      <nav className="fixed top-0 w-full z-20 bg-zinc-950/90 border-b border-zinc-800">
+      <nav className="fixed top-0 w-full z-20 bg-zinc-950/80 backdrop-blur-sm border-b border-zinc-800">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
           {/* Brand */}
-          <div className="flex items-center gap-3 min-w-max">
-            <span className="text-sm font-bold tracking-widest uppercase text-white">
+          <div className="flex items-center gap-3 min-w-max group cursor-default">
+            <div className="w-2 h-6 bg-accent" />
+            <span className="text-sm font-black tracking-[0.2em] uppercase text-white">
               CISSP
             </span>
-            <span className="text-zinc-600 text-sm font-light tracking-wide hidden sm:block">
-              Master
+            <span className="text-accent text-sm font-light tracking-widest hidden sm:block">
+              MASTER
             </span>
           </div>
 
           {/* Controls */}
           {!showWelcomeScreen && (
             <div className="flex items-center gap-3 flex-1 justify-end">
-              <span className="text-xs font-mono text-zinc-600 hidden md:block">
+              <span className="text-xs font-mono text-zinc-600">
                 {history.length > 0 ? `${currentIndex + 1} / ${history.length}` : ''}
               </span>
 
               <button
                 onClick={() => setShowStats(true)}
-                className="flex items-center gap-2 px-3 py-1.5 border border-zinc-800 hover:border-zinc-600 text-zinc-400 hover:text-zinc-200 transition-colors text-xs font-medium uppercase tracking-wider cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2 border border-zinc-800 hover:border-accent hover:text-accent text-zinc-400 transition-all text-[10px] font-bold uppercase tracking-widest cursor-pointer"
                 title="View Statistics"
               >
                 <BarChart3 size={14} />
@@ -144,7 +179,7 @@ const App: React.FC = () => {
 
               <button
                 onClick={handleReset}
-                className="flex items-center gap-2 px-3 py-1.5 border border-zinc-800 hover:border-zinc-600 text-zinc-500 hover:text-zinc-200 transition-colors text-xs font-medium uppercase tracking-wider cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2 border border-zinc-800 hover:border-zinc-500 text-zinc-600 hover:text-zinc-200 transition-all text-[10px] font-bold uppercase tracking-widest cursor-pointer"
                 title="Reset Session"
               >
                 <RotateCcw size={14} />
@@ -153,6 +188,15 @@ const App: React.FC = () => {
             </div>
           )}
         </div>
+        {/* Progress bar */}
+        {!showWelcomeScreen && history.length > 0 && (
+          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-zinc-900">
+            <div
+              className="h-full bg-accent/60 transition-all duration-300"
+              style={{ width: `${((currentIndex + 1) / history.length) * 100}%` }}
+            />
+          </div>
+        )}
       </nav>
 
       {/* Main Content Area */}
@@ -166,16 +210,19 @@ const App: React.FC = () => {
         ) : (
           <>
             {error && (
-              <div className="max-w-md w-full border border-zinc-800 p-6 text-center">
-                <AlertCircle className="w-8 h-8 text-zinc-500 mx-auto mb-3" />
-                <h3 className="text-zinc-200 font-medium mb-2 text-sm uppercase tracking-wider">Error Loading Cards</h3>
-                <p className="text-zinc-500 text-sm mb-4">{error}</p>
-                <button
-                  onClick={() => loadQuestionsForDifficulty(difficulty, model, history.length === 0, true)}
-                  className="border border-zinc-700 hover:border-zinc-500 text-zinc-300 px-4 py-2 text-sm font-medium transition-colors flex items-center gap-2 mx-auto cursor-pointer"
-                >
-                  <RefreshCcw size={14} /> Retry
-                </button>
+              <div className="max-w-md w-full border border-zinc-800 text-center overflow-hidden relative">
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-accent opacity-50" />
+                <div className="p-6">
+                  <AlertCircle className="w-8 h-8 text-zinc-500 mx-auto mb-3" />
+                  <h3 className="text-zinc-200 font-medium mb-2 text-sm uppercase tracking-wider">Error Loading Cards</h3>
+                  <p className="text-zinc-500 text-sm mb-4">{error}</p>
+                  <button
+                    onClick={() => loadQuestionsForDifficulty(difficulty, model, history.length === 0, true)}
+                    className="bg-accent text-zinc-950 hover:bg-accent-hover px-4 py-2 text-sm font-bold uppercase tracking-wider transition-colors flex items-center gap-2 mx-auto cursor-pointer"
+                  >
+                    <RefreshCcw size={14} /> Retry
+                  </button>
+                </div>
               </div>
             )}
 
@@ -187,7 +234,7 @@ const App: React.FC = () => {
             {/* Card Display */}
             {!error && history.length > 0 && currentCard && (
               <div className="w-full">
-                <Flashcard data={currentCard} savedSelection={currentSavedAnswer} onAnswer={handleAnswer} />
+                <Flashcard ref={flashcardRef} data={currentCard} savedSelection={currentSavedAnswer} onAnswer={handleAnswer} />
               </div>
             )}
           </>
