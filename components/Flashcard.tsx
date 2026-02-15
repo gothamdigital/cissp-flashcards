@@ -1,3 +1,18 @@
+/**
+ * Flashcard.tsx
+ *
+ * Displays a single CISSP practice question as an interactive flashcard.
+ * Handles option selection, answer reveal, correctness feedback, and
+ * "Deep Dive" search links (Perplexity and Google AI) shown after reveal.
+ *
+ * @decision DEC-FLASHCARD-001
+ * @title Unified Deep Dive button styling
+ * @status accepted
+ * @rationale Both search buttons (Perplexity and Google AI) use identical
+ *   border-zinc-700/text-zinc-300/hover:accent styling for visual consistency.
+ *   The previous asymmetry (Google AI used muted zinc-800/zinc-500) was an
+ *   accidental divergence with no semantic purpose.
+ */
 import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { FlashcardData, Difficulty } from '../types';
 import { Eye, Check, X, ExternalLink, CheckCircle2, XCircle } from 'lucide-react';
@@ -259,7 +274,7 @@ export const Flashcard = forwardRef<FlashcardHandle, FlashcardProps>(({ data, sa
                   href={`https://www.google.com/search?udm=50&q=${encodeQuery(buildSearchQuery(data))}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-[10px] font-bold uppercase tracking-widest border border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300 transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-[10px] font-bold uppercase tracking-widest border border-zinc-700 text-zinc-300 hover:border-accent hover:text-accent transition-colors"
                 >
                   <ExternalLink size={13} />
                   Google AI

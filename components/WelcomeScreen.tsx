@@ -1,3 +1,22 @@
+/**
+ * WelcomeScreen.tsx
+ *
+ * Entry screen for CISSP Master Flashcards. Lets the user select an AI model
+ * and difficulty level before starting a study session.
+ *
+ * @decision DEC-WELCOME-001
+ * @title Semantic color-coding for difficulty buttons
+ * @status accepted
+ * @rationale Using emerald/yellow/red instead of a uniform accent color gives
+ *   users an immediate visual cue about challenge level before they click.
+ *   Removes the ring-1 ring-accent-hover from Hard since color alone
+ *   sufficiently differentiates the three options.
+ *
+ * Difficulty buttons use semantic colors to reinforce the challenge level:
+ *   Easy   → emerald-600 (green)
+ *   Medium → yellow-500
+ *   Hard   → red-600
+ */
 import React from 'react';
 import { Difficulty, GeminiModel } from '../types';
 import { LoadingSpinner } from './LoadingSpinner';
@@ -67,10 +86,10 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStartSession, is
                 ${!selectedModel || isLoading
                   ? 'border border-zinc-900 text-zinc-700 cursor-not-allowed'
                   : i === 0
-                    ? 'bg-accent/70 text-zinc-950 hover:bg-accent active:scale-[0.98] cursor-pointer'
+                    ? 'bg-emerald-600 text-white hover:bg-emerald-500 active:scale-[0.98] cursor-pointer'
                     : i === 1
-                      ? 'bg-accent text-zinc-950 hover:bg-accent-hover active:scale-[0.98] cursor-pointer'
-                      : 'bg-accent text-zinc-950 hover:bg-accent-hover active:scale-[0.98] ring-1 ring-accent-hover cursor-pointer'
+                      ? 'bg-yellow-500 text-zinc-950 hover:bg-yellow-400 active:scale-[0.98] cursor-pointer'
+                      : 'bg-red-600 text-white hover:bg-red-500 active:scale-[0.98] cursor-pointer'
                 }`}
             >
               {diff}
