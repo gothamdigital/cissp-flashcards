@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Flashcard, FlashcardHandle } from './components/Flashcard';
 import { Controls } from './components/Controls';
-import { LoadingSpinner } from './components/LoadingSpinner';
 import { SkeletonCard } from './components/SkeletonCard';
 import { ProgressDashboard } from './components/ProgressDashboard';
 import { WelcomeScreen } from './components/WelcomeScreen';
@@ -31,8 +30,9 @@ const App: React.FC = () => {
     resetQuestions,
   } = useQuestionManager(difficulty, model, () => setShowMilestone(true));
 
-  const { userAnswers, handleAnswer: recordAnswer, resetAnswers } = useAnswerTracking();
+  const { userAnswers, handleAnswer: recordAnswer, stats: answerStats, resetAnswers } = useAnswerTracking();
   const flashcardRef = useRef<FlashcardHandle>(null);
+  const historyLengthRef = useRef<number>(0);
 
   const handleNext = useCallback(() => {
     handleNextQuestion();
@@ -45,6 +45,10 @@ const App: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showWelcomeScreen]);
+
+  useEffect(() => {
+    historyLengthRef.current = history.length;
+  }, [history.length]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -114,7 +118,9 @@ const App: React.FC = () => {
     if (newDifficulty !== difficulty) {
       setDifficulty(newDifficulty);
       loadQuestionsForDifficulty(newDifficulty, model, false, false).then(() => {
-        setCurrentIndex((prev) => prev + 1);
+        setCurrentIndex((prev) =>
+          prev + 1 < historyLengthRef.current ? prev + 1 : prev
+        );
       });
     } else {
       handleNextQuestion();
@@ -253,7 +259,7 @@ const App: React.FC = () => {
       )}
 
       {/* Progress Dashboard Modal */}
-      <ProgressDashboard isOpen={showStats} onClose={() => setShowStats(false)} answers={userAnswers} />
+      <ProgressDashboard isOpen={showStats} onClose={() => setShowStats(false)} stats={answerStats} />
 
       {/* Session Milestone Modal */}
       <SessionMilestone

@@ -1,39 +1,15 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { X, TrendingUp } from 'lucide-react';
-import { UserAnswer } from '../types';
+import { Stats } from '../hooks/useAnswerTracking';
 import { CONFIG } from '../config';
 
 interface ProgressDashboardProps {
   isOpen: boolean;
   onClose: () => void;
-  answers: Record<string, UserAnswer>;
+  stats: Stats;
 }
 
-export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ isOpen, onClose, answers }) => {
-  const stats = useMemo(() => {
-    const answerList: UserAnswer[] = Object.values(answers);
-    const total = answerList.length;
-    const correct = answerList.filter(a => a.isCorrect).length;
-    const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
-
-    const byDomain: Record<string, { total: number; correct: number }> = {};
-
-    answerList.forEach(a => {
-      if (!byDomain[a.domain]) {
-        byDomain[a.domain] = { total: 0, correct: 0 };
-      }
-      const domainStats = byDomain[a.domain];
-      if (domainStats) {
-        domainStats.total += 1;
-        if (a.isCorrect) {
-          domainStats.correct += 1;
-        }
-      }
-    });
-
-    return { total, correct, accuracy, byDomain };
-  }, [answers]);
-
+export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ isOpen, onClose, stats }) => {
   if (!isOpen) return null;
 
   return (

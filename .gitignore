@@ -40,3 +40,7 @@ vite_out
 metadata.json
 GEMINI.md
 CLAUDE.md
+.claude/
+DECISIONS.md
+tmp/
+.worktrees/

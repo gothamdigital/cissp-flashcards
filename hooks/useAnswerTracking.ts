@@ -1,12 +1,12 @@
 import { useState, useMemo, useCallback } from 'react';
 import { UserAnswer } from '../types';
 
-interface DomainStats {
+export interface DomainStats {
   total: number;
   correct: number;
 }
 
-interface Stats {
+export interface Stats {
   total: number;
   correct: number;
   accuracy: number;

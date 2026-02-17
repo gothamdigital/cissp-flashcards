@@ -264,4 +264,65 @@ describe('useQuestionManager', () => {
     expect(result.current.error).toBeNull();
     expect(result.current.isLoading).toBe(false);
   });
+
+  it('does not advance index when loading next batch returns no questions', async () => {
+    mockFetch
+      .mockResolvedValueOnce([makeQuestion('q0')])
+      // Background prefetch call
+      .mockResolvedValueOnce([])
+      // Foreground load triggered by handleNext at end of list
+      .mockResolvedValueOnce([]);
+
+    const { result } = renderHook(() =>
+      useQuestionManager(defaultDifficulty, defaultModel)
+    );
+
+    await act(async () => {
+      await result.current.loadQuestionsForDifficulty(
+        defaultDifficulty,
+        defaultModel,
+        true
+      );
+    });
+
+    expect(result.current.currentIndex).toBe(0);
+    expect(result.current.history).toHaveLength(1);
+
+    await act(async () => {
+      result.current.handleNext();
+      await Promise.resolve();
+    });
+
+    expect(result.current.currentIndex).toBe(0);
+    expect(result.current.history).toHaveLength(1);
+  });
+
+  it('does not advance index when loading next batch fails', async () => {
+    mockFetch
+      .mockResolvedValueOnce([makeQuestion('q0')])
+      // Background prefetch call
+      .mockResolvedValueOnce([])
+      // Foreground load triggered by handleNext at end of list
+      .mockRejectedValueOnce(new Error('network error'));
+
+    const { result } = renderHook(() =>
+      useQuestionManager(defaultDifficulty, defaultModel)
+    );
+
+    await act(async () => {
+      await result.current.loadQuestionsForDifficulty(
+        defaultDifficulty,
+        defaultModel,
+        true
+      );
+    });
+
+    await act(async () => {
+      result.current.handleNext();
+      await Promise.resolve();
+    });
+
+    expect(result.current.currentIndex).toBe(0);
+    expect(result.current.error).toBe('network error');
+  });
 });

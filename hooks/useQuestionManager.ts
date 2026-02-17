@@ -30,6 +30,7 @@ export const useQuestionManager = (
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const prefetchInProgressRef = useRef<boolean>(false);
+  const historyRef = useRef<FlashcardData[]>([]);
 
   const getPreviousQuestionTexts = useCallback((): string[] => {
     return history.map((q) => q.question);
@@ -65,6 +66,9 @@ export const useQuestionManager = (
 
           const existingIds = new Set(prev.map((q) => q.id));
           const uniqueNew = newQuestions.filter((q) => !existingIds.has(q.id));
+          if (uniqueNew.length === 0) {
+            return prev;
+          }
           return [...prev, ...uniqueNew];
         });
 
@@ -95,7 +99,9 @@ export const useQuestionManager = (
     } else {
       // Load more questions
       loadQuestionsForDifficulty(difficulty, model, false, false).then(() => {
-        setCurrentIndex((prev) => prev + 1);
+        setCurrentIndex((prev) =>
+          prev + 1 < historyRef.current.length ? prev + 1 : prev
+        );
       });
     }
   }, [currentIndex, history.length, difficulty, model, loadQuestionsForDifficulty, onMilestone]);
@@ -115,6 +121,10 @@ export const useQuestionManager = (
 
   // Pre-fetch more questions when nearing the end of the list
   useEffect(() => {
+    historyRef.current = history;
+  }, [history]);
+
+  useEffect(() => {
     const shouldPrefetch =
       history.length > 0 &&
       currentIndex >= history.length - CONFIG.PREFETCH_THRESHOLD &&
@@ -132,6 +142,9 @@ export const useQuestionManager = (
           setHistory((prev) => {
             const existingIds = new Set(prev.map((q) => q.id));
             const uniqueNew = newQs.filter((q) => !existingIds.has(q.id));
+            if (uniqueNew.length === 0) {
+              return prev;
+            }
             return [...prev, ...uniqueNew];
           });
         })
