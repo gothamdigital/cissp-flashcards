@@ -5,12 +5,18 @@ import { SkeletonCard } from './components/SkeletonCard';
 import { ProgressDashboard } from './components/ProgressDashboard';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { SessionMilestone } from './components/SessionMilestone';
+import CISSPDashboard from './components/CISSPDashboard';
 import { Difficulty, GeminiModel } from './types';
-import { AlertCircle, RefreshCcw, BarChart3, RotateCcw } from 'lucide-react';
+import { AlertCircle, RefreshCcw, BarChart3, RotateCcw, ExternalLink } from 'lucide-react';
 import { useQuestionManager } from './hooks/useQuestionManager';
 import { useAnswerTracking } from './hooks/useAnswerTracking';
+import { isDashboardView, openDashboardWindow } from './utils/dashboardWindow';
 
 const App: React.FC = () => {
+  if (isDashboardView()) {
+    return <CISSPDashboard />;
+  }
+
   const [showStats, setShowStats] = useState<boolean>(false);
   const [showMilestone, setShowMilestone] = useState<boolean>(false);
   const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.Medium);
@@ -168,8 +174,18 @@ const App: React.FC = () => {
           </div>
 
           {/* Controls */}
-          {!showWelcomeScreen && (
-            <div className="flex items-center gap-3 flex-1 justify-end">
+          <div className="flex items-center gap-3 flex-1 justify-end">
+            <button
+              onClick={openDashboardWindow}
+              className="flex items-center gap-2 px-4 py-2 border border-zinc-800 hover:border-accent hover:text-accent text-zinc-400 transition-all text-[10px] font-bold uppercase tracking-widest cursor-pointer"
+              title="Open CISSP Dashboard in a new window"
+            >
+              <ExternalLink size={14} />
+              <span className="hidden sm:inline">Dashboard</span>
+            </button>
+
+            {!showWelcomeScreen && (
+              <>
               <span className="text-xs font-mono text-zinc-600">
                 {history.length > 0 ? `${currentIndex + 1} / ${history.length}` : ''}
               </span>
@@ -191,8 +207,9 @@ const App: React.FC = () => {
                 <RotateCcw size={14} />
                 <span className="hidden sm:inline">Reset</span>
               </button>
-            </div>
-          )}
+              </>
+            )}
+          </div>
         </div>
         {/* Progress bar */}
         {!showWelcomeScreen && history.length > 0 && (
@@ -240,7 +257,13 @@ const App: React.FC = () => {
             {/* Card Display */}
             {!error && history.length > 0 && currentCard && (
               <div className="w-full">
-                <Flashcard ref={flashcardRef} data={currentCard} savedSelection={currentSavedAnswer} onAnswer={handleAnswer} />
+                <Flashcard
+                  ref={flashcardRef}
+                  data={currentCard}
+                  savedSelection={currentSavedAnswer}
+                  onAnswer={handleAnswer}
+                  onOpenDashboard={openDashboardWindow}
+                />
               </div>
             )}
           </>
