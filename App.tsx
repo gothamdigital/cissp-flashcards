@@ -262,7 +262,6 @@ const App: React.FC = () => {
                   data={currentCard}
                   savedSelection={currentSavedAnswer}
                   onAnswer={handleAnswer}
-                  onOpenDashboard={openDashboardWindow}
                 />
               </div>
             )}

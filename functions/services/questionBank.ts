@@ -49,27 +49,36 @@ export async function queryBankedQuestions(
   db: D1Database,
   difficulty: string,
   topics: string[],
-  count: number
+  count: number,
+  excludedQuestionTexts: string[] = []
 ): Promise<QuestionRow[]> {
   if (topics.length === 0 || count <= 0) return [];
 
-  // Build parameterized placeholders for topics
-  const placeholders = topics.map(() => "?").join(", ");
+  // One question per assigned sub-topic keeps batch size predictable.
+  const uniqueTopics = [...new Set(topics)].slice(0, count);
+  const questionPlaceholders =
+    excludedQuestionTexts.length > 0
+      ? ` AND question NOT IN (${excludedQuestionTexts.map(() => "?").join(", ")})`
+      : "";
 
-  const stmt = db.prepare(
-    `SELECT * FROM questions
-     WHERE difficulty = ?
-       AND sub_topic IN (${placeholders})
-       AND quality_score >= 0.3
-     ORDER BY times_served ASC, RANDOM()
-     LIMIT ?`
+  const rows = await Promise.all(
+    uniqueTopics.map(async (topic) => {
+      const stmt = db.prepare(
+        `SELECT * FROM questions
+         WHERE difficulty = ?
+           AND sub_topic = ?
+           AND quality_score >= 0.3${questionPlaceholders}
+         ORDER BY times_served ASC, RANDOM()
+         LIMIT 1`
+      );
+
+      return stmt
+        .bind(difficulty, topic, ...excludedQuestionTexts)
+        .first<QuestionRow>();
+    })
   );
 
-  const result = await stmt
-    .bind(difficulty, ...topics, count)
-    .all<QuestionRow>();
-
-  return result.results;
+  return rows.filter((row): row is QuestionRow => !!row);
 }
 
 /**

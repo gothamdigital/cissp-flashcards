@@ -16,13 +16,11 @@
 import React, { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { FlashcardData, Difficulty } from '../types';
 import { Eye, Check, X, ExternalLink, CheckCircle2, XCircle } from 'lucide-react';
-import { openDashboardWindow } from '../utils/dashboardWindow';
 
 interface FlashcardProps {
   data: FlashcardData;
   savedSelection?: number | null;
   onAnswer: (optionIndex: number) => void;
-  onOpenDashboard?: () => void;
 }
 
 export interface FlashcardHandle {
@@ -31,7 +29,7 @@ export interface FlashcardHandle {
 }
 
 export const Flashcard = forwardRef<FlashcardHandle, FlashcardProps>(
-  ({ data, savedSelection, onAnswer, onOpenDashboard }, ref) => {
+  ({ data, savedSelection, onAnswer }, ref) => {
   const [localSelection, setLocalSelection] = useState<number | null>(null);
 
   const isRevealed = savedSelection !== null && savedSelection !== undefined;
@@ -185,14 +183,6 @@ export const Flashcard = forwardRef<FlashcardHandle, FlashcardProps>(
             </span>
           </div>
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => (onOpenDashboard ?? openDashboardWindow)()}
-              className="flex items-center gap-1.5 border border-zinc-800 hover:border-accent hover:text-accent text-zinc-500 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest transition-colors cursor-pointer"
-              title="Open CISSP dashboard in a new window"
-            >
-              <ExternalLink size={11} />
-              Dashboard
-            </button>
             {isRevealed && (
               isCorrect
                 ? <CheckCircle2 size={14} className="text-emerald-500" />

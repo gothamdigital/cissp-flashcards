@@ -13,6 +13,8 @@ dist-ssr
 *.local
 
 /.env.local
+.env
+.env.*
 .dev.vars
 .env.example
 .geminiignore
@@ -42,5 +44,12 @@ GEMINI.md
 CLAUDE.md
 .claude/
 DECISIONS.md
+AGENTS.md
 tmp/
 .worktrees/
+
+# Security-sensitive local key/cert artifacts
+*.pem
+*.key
+*.p12
+*.pfx

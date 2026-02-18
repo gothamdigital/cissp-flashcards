@@ -28,12 +28,39 @@ enum Difficulty {
   Hard = "Hard",
 }
 
-/** Generate a deterministic short ID from question text using Web Crypto API */
-async function hashQuestion(text: string): Promise<string> {
-  const data = new TextEncoder().encode(text.trim().toLowerCase());
+/** Generate a deterministic short ID from normalized question content */
+async function hashQuestion(question: Omit<FlashcardShape, "id">): Promise<string> {
+  const canonicalPayload = JSON.stringify({
+    domain: question.domain.trim().toLowerCase(),
+    subTopic: question.subTopic.trim().toLowerCase(),
+    difficulty: question.difficulty.trim().toLowerCase(),
+    question: question.question.trim().toLowerCase(),
+    options: question.options.map((opt) => opt.trim().toLowerCase()),
+    explanation: question.explanation.trim().toLowerCase(),
+  });
+
+  const data = new TextEncoder().encode(canonicalPayload);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer).slice(0, 8));
+  const hashArray = Array.from(new Uint8Array(hashBuffer).slice(0, 12));
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+export function mergeUniqueQuestions(
+  bankedQuestions: FlashcardShape[],
+  generatedQuestions: FlashcardShape[],
+  count: number
+): FlashcardShape[] {
+  const seenIds = new Set<string>();
+  const merged: FlashcardShape[] = [];
+
+  for (const question of [...bankedQuestions, ...generatedQuestions]) {
+    if (seenIds.has(question.id)) continue;
+    seenIds.add(question.id);
+    merged.push(question);
+    if (merged.length >= count) break;
+  }
+
+  return merged;
 }
 
 /** Generate questions via Gemini for the given topic assignments */
@@ -140,7 +167,15 @@ Requirements:
   // Replace Gemini-generated IDs with deterministic content-based hashes
   await Promise.all(
     parsed.questions.map(async (q) => {
-      q.id = await hashQuestion(q.question);
+      q.id = await hashQuestion({
+        domain: q.domain,
+        subTopic: q.subTopic,
+        difficulty: q.difficulty,
+        question: q.question,
+        options: q.options,
+        correctAnswerIndex: q.correctAnswerIndex,
+        explanation: q.explanation,
+      });
     })
   );
 
@@ -208,7 +243,13 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     // Phase 2: Try D1 question bank first (graceful degradation if unavailable)
     if (db) {
       try {
-        const rows = await queryBankedQuestions(db, difficulty, targetTopics, count);
+        const rows = await queryBankedQuestions(
+          db,
+          difficulty,
+          targetTopics,
+          count,
+          previousQuestions
+        );
         bankedQuestions = rows.map(toFlashcardData);
 
         // Determine which topics are already covered by banked questions
@@ -239,7 +280,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     }
 
     // Merge banked + generated
-    const allQuestions = [...bankedQuestions, ...generatedQuestions];
+    const allQuestions = mergeUniqueQuestions(bankedQuestions, generatedQuestions, count);
 
     // Increment times_served for all returned questions (background, survives response)
     if (db && allQuestions.length > 0) {
